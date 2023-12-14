@@ -6,29 +6,40 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+
+	"github.com.br/Leodf/go-web-app/pkg/config"
 )
 
+var functions = template.FuncMap{}
+
+var app *config.AppConfig
+
+func NewTemplates(a *config.AppConfig) {
+	app = a
+}
+
 func Template(w http.ResponseWriter, tmpl string) {
-	// create a template cache from the app config
-	tc, err := CreateTemplateCache()
-	if err != nil {
-		log.Fatal(err)
+	var tc map[string]*template.Template
+
+	if app.UseCache {
+		// create a template cache from the app config
+		tc = app.TemplateCache
+	} else {
+		tc, _ = CreateTemplateCache()
+
 	}
 	// get request template from cache
 	t, ok := tc[tmpl]
 	if !ok {
-		log.Fatal(err)
+		log.Fatal("Could not get template from template cache")
 	}
 
 	buf := new(bytes.Buffer)
 
-	err = t.Execute(buf, nil)
-	if err != nil {
-		log.Println(err)
-	}
+	_ = t.Execute(buf, nil)
 
 	// render the template
-	_, err = buf.WriteTo(w)
+	_, err := buf.WriteTo(w)
 	if err != nil {
 		log.Println(err)
 	}
