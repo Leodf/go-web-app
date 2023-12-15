@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com.br/Leodf/go-web-app/pkg/config"
+	"github.com.br/Leodf/go-web-app/pkg/model"
 )
 
 var functions = template.FuncMap{}
@@ -18,7 +19,11 @@ func NewTemplates(a *config.AppConfig) {
 	app = a
 }
 
-func Template(w http.ResponseWriter, tmpl string) {
+func AddDefaultData(td *model.TemplateData) *model.TemplateData {
+	return td
+}
+
+func Template(w http.ResponseWriter, tmpl string, td *model.TemplateData) {
 	var tc map[string]*template.Template
 
 	if app.UseCache {
@@ -36,7 +41,9 @@ func Template(w http.ResponseWriter, tmpl string) {
 
 	buf := new(bytes.Buffer)
 
-	_ = t.Execute(buf, nil)
+	td = AddDefaultData(td)
+
+	_ = t.Execute(buf, td)
 
 	// render the template
 	_, err := buf.WriteTo(w)
